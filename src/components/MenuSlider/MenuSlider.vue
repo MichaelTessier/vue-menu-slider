@@ -1,22 +1,21 @@
 <template>
   <div class="menu-slider">
-    <div class="container">
+    <div class="items" ref="items">
       <div
-        v-for="n in 10"
+        v-for="n in 20"
         :key="n"
         class="item"
       >
         item {{ n }}
       </div>
     </div>
-
     <div class="controls">
-      <div class="prev">
+      <button class="prev" @click="prev" :disabled="!canPrev">
         prev
-      </div>
-      <div class="next">
+      </button>
+      <button class="next" @click="next" :disabled="!canNext">
         next
-      </div>
+      </button>
     </div>
   </div>
 </template>
@@ -27,25 +26,38 @@ export default {
   props: {
     // msg: String
   },
-  // data: () => ({
-  //   items: [
-  //     'item 1',
-  //     'item 2',
-  //     'item 3'
-  //   ]
-  // }),
+  data() {
+    return {
+      canPrev: false,
+      canNext: true
+    }
+  },
   methods: {
-    canPrev () {
-      // to implement
-    },
     prev () {
-      // to implement
-    },
-    canNext () {
-      // to implement
+      const {offsetWidth, offsetLeft, scrollLeft, children} = this.$refs.items
+
+      const prevItem = Object.values(children).find((child) => {
+        return (child.offsetWidth + child.offsetLeft) < (offsetLeft + offsetWidth + scrollLeft)
+      })
+
+      this.$refs.items.scrollLeft = this.$refs.items.scrollLeft - prevItem.offsetWidth * 2
     },
     next () {
-      // to implement
+      const {offsetWidth, offsetLeft, scrollLeft, children} = this.$refs.items
+
+      const nextItem = Object.values(children).find((child) => {
+        if (!child) return false
+        return (child.offsetWidth + child.offsetLeft) > (offsetLeft + offsetWidth + scrollLeft)
+      })
+
+
+      console.log(nextItem)
+      this.canNext === nextItem
+      if (!nextItem) return false
+
+
+      this.$refs.items.scrollLeft = this.$refs.items.scrollLeft + nextItem.offsetWidth * 2
+      
     }
   }
 }
@@ -55,9 +67,10 @@ export default {
 .menu-slider {
   display: flex;
 
-  & .container {
+  & .items {
     display: flex;
     overflow-x: auto;
+    scroll-behavior: smooth;
 
     &::-webkit-scrollbar {
       display: none;
@@ -67,9 +80,9 @@ export default {
       display: flex;
       white-space: nowrap;
 
-      margin: 0 2px;
-      padding: 3px;
-      border-radius: 2px;
+      margin: 0 4px;
+      padding: 5px;
+      border-radius: 4px;
       border: 1px solid #eee;
     }
   }
