@@ -1,7 +1,8 @@
 <template>
   <div class="home">
     <div class="container">
-      <MenuSlider />
+      <MenuSlider :items="items" />
+      <router-view />
     </div>
   </div>
 </template>
@@ -14,7 +15,27 @@ export default {
   name: 'Home',
   components: {
     MenuSlider
-  }
+  },
+  data: () => ({
+    items: [
+      {
+        label: 'Ambiance',
+        to: { name: 'contact' }
+      },
+      {
+        label: 'Management',
+        to: { name: 'about' }
+      },
+      {
+        label: `Rôle et persepective d'évolution`,
+        to: { name: 'page-a' }
+      },
+      {
+        label: 'Espece et condotions de travail',
+        to: { name: 'page-b' }
+      }
+    ]
+  })
 }
 
 </script>

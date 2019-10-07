@@ -1,16 +1,21 @@
 <template>
   <div class="menu-slider">
-    <div
-      ref="items"
-      class="items"
-    >
-      <div
-        v-for="n in 10"
-        :key="n"
-        class="item"
+    <div class="container">
+      <router-link
+        tag="div"
+        v-for="(item, index) in items"
+        :key="index"
+        v-slot="{ isExactActive }"
+        :to="item.to"
+        @click.native="onClick($event, item.to)"
       >
-        item {{ n }}
-      </div>
+        <div 
+          class="item" 
+          :style="[isExactActive && activeStyle]"
+        >
+          {{ item.label }} 
+        </div>
+      </router-link>
     </div>
     <div class="controls">
       <button
@@ -18,48 +23,71 @@
         :disabled="!canPrev"
         @click="prev"
       >
-        prev
+        <
       </button>
       <button
         class="next"
         :disabled="!canNext"
         @click="next"
       >
-        next
+        >
       </button>
     </div>
   </div>
 </template>
 
 <script>
+
 export default {
   name: 'MenuSlider',
   props: {
-    // msg: String
+    items: {
+      type: Array
+    },
+    activeColor: {
+      type: String,
+      default: '66, 185, 131'
+    }
   },
   data () {
     return {
       canPrev: false,
-      canNext: true
+      canNext: true,
+      container: null,
+    }
+  },
+  mounted() {
+    this.container = this.$el.querySelector('.container')
+  },
+  computed: {
+    activeStyle () {
+      return {
+        color: `rgb(${this.activeColor}`,
+        backgroundColor: `rgba(${this.activeColor}, .1)`,
+        borderColor: `rgba(${this.activeColor}, .3)`,
+      }
     }
   },
   methods: {
-    prev () {
-      const { offsetLeft, scrollLeft, children } = this.$refs.items
+    prev (to) {
+      if (!this.container) return false
+      const { offsetLeft, scrollLeft, children } = this.container
       this.canNext = true
 
       const prevItem = Object.values(children).reverse().find((child, index) => {
-        if (!child || index === 0) return false
+        if (!child) return false
         if (index === children.length - 1) this.canPrev = false
         return (child.offsetLeft) < (offsetLeft + scrollLeft)
       })
 
       if (!prevItem) return false
 
-      this.$refs.items.scrollLeft = prevItem.offsetLeft - this.$refs.items.offsetLeft
+      this.container.scrollLeft = prevItem.offsetLeft - this.container.offsetLeft
+
     },
-    next () {
-      const { offsetWidth, offsetLeft, scrollLeft, children } = this.$refs.items
+    next (to) {
+      if (!this.container) return false
+      const { offsetWidth, offsetLeft, scrollLeft, children } = this.container
       this.canPrev = true
 
       const nextItem = Object.values(children).find((child, index) => {
@@ -70,8 +98,20 @@ export default {
 
       if (!nextItem) return false
 
-      this.$refs.items.scrollLeft = (nextItem.offsetWidth + nextItem.offsetLeft) - (offsetLeft + offsetWidth)
+      this.container.scrollLeft = (nextItem.offsetWidth + nextItem.offsetLeft) - (offsetLeft + offsetWidth)
+
+    },
+    onClick (event, to) {
+      const target = event.target
+      const { offsetLeft, scrollLeft, offsetWidth } = this.container
+      if ((offsetLeft + scrollLeft) > target.offsetLeft) {
+        this.prev()
+      } else if ((offsetLeft + scrollLeft + offsetWidth) < (target.offsetLeft + target.offsetWidth)){
+        this.next()
+      }
+      this.$router.push(to)
     }
+
   }
 }
 </script>
@@ -80,7 +120,7 @@ export default {
 .menu-slider {
   display: flex;
 
-  & .items {
+  & .container {
     display: flex;
     overflow-x: auto;
     scroll-behavior: smooth;
@@ -92,16 +132,27 @@ export default {
     & .item {
       display: flex;
       white-space: nowrap;
-
-      margin: 0 4px;
-      padding: 5px;
-      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 .3em;
+      padding: .3em .8em;
+      border-radius: .5em;
       border: 1px solid #eee;
+      transition: all .4s ease;
     }
   }
 
   & .controls {
     display: flex;
+
+    & button {
+      background: none;
+      font-family: inherit;
+      font-size: 100%;
+      line-height: 1.15;
+      margin: 0;
+      outline: none;
+      border: 1px solid #eee;
+    }
   }
 }
 
