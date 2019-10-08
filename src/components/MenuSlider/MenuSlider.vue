@@ -2,18 +2,18 @@
   <div class="menu-slider">
     <div class="container">
       <router-link
-        tag="div"
         v-for="(item, index) in items"
         :key="index"
         v-slot="{ isExactActive }"
+        tag="div"
         :to="item.to"
         @click.native="onClick($event, item.to)"
       >
-        <div 
-          class="item" 
+        <div
+          class="item"
           :style="[isExactActive && activeStyle]"
         >
-          {{ item.label }} 
+          {{ item.label }}
         </div>
       </router-link>
     </div>
@@ -42,7 +42,8 @@ export default {
   name: 'MenuSlider',
   props: {
     items: {
-      type: Array
+      type: Array,
+      required: true
     },
     activeColor: {
       type: String,
@@ -53,23 +54,23 @@ export default {
     return {
       canPrev: false,
       canNext: true,
-      container: null,
+      container: null
     }
-  },
-  mounted() {
-    this.container = this.$el.querySelector('.container')
   },
   computed: {
     activeStyle () {
       return {
         color: `rgb(${this.activeColor}`,
         backgroundColor: `rgba(${this.activeColor}, .1)`,
-        borderColor: `rgba(${this.activeColor}, .3)`,
+        borderColor: `rgba(${this.activeColor}, .3)`
       }
     }
   },
+  mounted () {
+    this.container = this.$el.querySelector('.container')
+  },
   methods: {
-    prev (to) {
+    prev () {
       if (!this.container) return false
       const { offsetLeft, scrollLeft, children } = this.container
       this.canNext = true
@@ -77,15 +78,15 @@ export default {
       const prevItem = Object.values(children).reverse().find((child, index) => {
         if (!child) return false
         if (index === children.length - 1) this.canPrev = false
+
         return (child.offsetLeft) < (offsetLeft + scrollLeft)
       })
 
       if (!prevItem) return false
 
       this.container.scrollLeft = prevItem.offsetLeft - this.container.offsetLeft
-
     },
-    next (to) {
+    next () {
       if (!this.container) return false
       const { offsetWidth, offsetLeft, scrollLeft, children } = this.container
       this.canPrev = true
@@ -93,20 +94,21 @@ export default {
       const nextItem = Object.values(children).find((child, index) => {
         if (!child) return false
         if (index === children.length - 1) this.canNext = false
+
         return (child.offsetWidth + child.offsetLeft) > (offsetLeft + offsetWidth + scrollLeft)
       })
 
       if (!nextItem) return false
 
       this.container.scrollLeft = (nextItem.offsetWidth + nextItem.offsetLeft) - (offsetLeft + offsetWidth)
-
     },
     onClick (event, to) {
       const target = event.target
       const { offsetLeft, scrollLeft, offsetWidth } = this.container
+
       if ((offsetLeft + scrollLeft) > target.offsetLeft) {
         this.prev()
-      } else if ((offsetLeft + scrollLeft + offsetWidth) < (target.offsetLeft + target.offsetWidth)){
+      } else if ((offsetLeft + scrollLeft + offsetWidth) < (target.offsetLeft + target.offsetWidth)) {
         this.next()
       }
       this.$router.push(to)
@@ -135,7 +137,7 @@ export default {
       cursor: pointer;
       margin: 0 .3em;
       padding: .3em .8em;
-      border-radius: .5em;
+      border-radius: 30px;
       border: 1px solid #eee;
       transition: all .4s ease;
     }

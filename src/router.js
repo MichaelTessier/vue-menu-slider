@@ -25,14 +25,14 @@ export default new Router({
         {
           path: '/page-a',
           name: 'page-a',
-          component: () => import(/* webpackChunkName: "about" */ './views/About.vue')
+          component: () => import(/* webpackChunkName: "about" */ './views/PageA.vue')
         },
         {
           path: '/page-b',
           name: 'page-b',
-          component: () => import(/* webpackChunkName: "about" */ './views/Contact.vue')
-        },
+          component: () => import(/* webpackChunkName: "about" */ './views/PageB.vue')
+        }
       ]
-    },
+    }
   ]
 })

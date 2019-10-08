@@ -1,6 +1,6 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
+  <div>
+    <h1>This is page A</h1>
     <p>
       Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto eaque, placeat doloremque ducimus illo quaerat cum dolorum dolorem mollitia et, cupiditate voluptatibus, alias adipisci. Magni repellendus optio dolore provident doloremque?
       Minima impedit accusamus doloribus error est pariatur obcaecati consequuntur vero illum blanditiis veniam porro ipsam sapiente, ipsa aliquid rerum qui possimus quidem similique mollitia perspiciatis ipsum! Quasi perspiciatis vero cum!
