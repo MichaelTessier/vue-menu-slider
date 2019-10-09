@@ -1,4 +1,4 @@
-# vue-menu-slider
+# vue-menu-slider ( Work In Progress )
 
 ## Project setup
 ```
