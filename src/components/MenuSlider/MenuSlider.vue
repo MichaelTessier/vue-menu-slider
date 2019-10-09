@@ -56,8 +56,7 @@ export default {
   data () {
     return {
       canPrev: false,
-      canNext: true,
-      container: null
+      canNext: true
     }
   },
   computed: {
