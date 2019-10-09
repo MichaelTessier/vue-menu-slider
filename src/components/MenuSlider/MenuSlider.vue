@@ -1,6 +1,9 @@
 <template>
   <div class="menu-slider">
-    <div class="container">
+    <div
+      ref="container"
+      class="container"
+    >
       <router-link
         v-for="(item, index) in items"
         :key="index"
@@ -66,13 +69,9 @@ export default {
       }
     }
   },
-  mounted () {
-    this.container = this.$el.querySelector('.container')
-  },
   methods: {
     prev () {
-      if (!this.container) return false
-      const { offsetLeft, scrollLeft, children } = this.container
+      const { offsetLeft, scrollLeft, children } = this.$refs.container
       this.canNext = true
 
       const prevItem = Object.values(children).reverse().find((child, index) => {
@@ -84,11 +83,10 @@ export default {
 
       if (!prevItem) return false
 
-      this.container.scrollLeft = prevItem.offsetLeft - this.container.offsetLeft
+      this.$refs.container.scrollLeft = prevItem.offsetLeft - offsetLeft
     },
     next () {
-      if (!this.container) return false
-      const { offsetWidth, offsetLeft, scrollLeft, children } = this.container
+      const { offsetWidth, offsetLeft, scrollLeft, children } = this.$refs.container
       this.canPrev = true
 
       const nextItem = Object.values(children).find((child, index) => {
@@ -100,11 +98,11 @@ export default {
 
       if (!nextItem) return false
 
-      this.container.scrollLeft = (nextItem.offsetWidth + nextItem.offsetLeft) - (offsetLeft + offsetWidth)
+      this.$refs.container.scrollLeft = (nextItem.offsetWidth + nextItem.offsetLeft) - (offsetLeft + offsetWidth)
     },
     onClick (event, to) {
       const target = event.target
-      const { offsetLeft, scrollLeft, offsetWidth } = this.container
+      const { offsetLeft, scrollLeft, offsetWidth } = this.$refs.container
 
       if ((offsetLeft + scrollLeft) > target.offsetLeft) {
         this.prev()
