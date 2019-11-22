@@ -3,43 +3,55 @@
     <div
       ref="container"
       class="container"
+      @scroll="handleScroll"
     >
-      <router-link
+      <div
         v-for="(item, index) in items"
         :key="index"
-        v-slot="{ isExactActive }"
-        tag="div"
-        :to="item.to"
-        @click.native="onClick($event, item.to)"
       >
-        <div
-          class="item"
-          :style="[isExactActive && activeStyle]"
+        <slot 
+          name="item" 
+          :item="item" 
+          :onClick="{
+            click: ($event) => onClick($event)
+          }"
         >
-          {{ item.label }}
-        </div>
-      </router-link>
+          <div class="item" @click="onClick($event, item)">{{ item.label }}</div>
+        </slot>
+      </div>
     </div>
     <div class="controls">
       <button
         class="prev"
-        :disabled="!canPrev"
         @click="prev"
+        :disabled="!canPrev"
       >
-        <
+        <slot name="prev">
+          {{ prevLabel }}
+        </slot>
       </button>
       <button
         class="next"
         :disabled="!canNext"
         @click="next"
       >
-        >
+        <slot name="next">
+          {{ nextLabel }}
+        </slot>
       </button>
     </div>
   </div>
 </template>
 
 <script>
+
+import { 
+  getPrevItem, 
+  getNextItem, 
+  removeClass 
+} from './_lib'
+
+const ACTIVE_CLASS = 'ms-item-is-active'
 
 export default {
   name: 'MenuSlider',
@@ -48,69 +60,89 @@ export default {
       type: Array,
       required: true
     },
-    activeColor: {
+    prevLabel: {
       type: String,
-      default: '66, 185, 131'
-    }
+      default: 'Prev'
+    },
+    nextLabel: {
+      type: String,
+      default: 'Next'
+    },
   },
-  data () {
+  data() {
     return {
-      canPrev: false,
-      canNext: true
+      index: 0,
+      lastItem: null,
     }
   },
   computed: {
-    activeStyle () {
-      return {
-        color: `rgb(${this.activeColor}`,
-        backgroundColor: `rgba(${this.activeColor}, .1)`,
-        borderColor: `rgba(${this.activeColor}, .3)`
-      }
+    canPrev() { 
+      return this.index > 0
+    },
+    canNext() {
+      return this.index < this.items.length - 1
     }
   },
+  mounted() {
+    this.lastItem = Object.values(this.$refs.container.children).pop()
+  },
   methods: {
-    prev () {
-      const { offsetLeft, scrollLeft, children } = this.$refs.container
-      this.canNext = true
+    prev() {
+      const { children, scrollLeft, offsetLeft } = this.$refs.container
+      const item = getPrevItem(children, scrollLeft, offsetLeft)
 
-      const prevItem = Object.values(children).reverse().find((child, index) => {
-        if (!child) return false
-        if (index === children.length - 1) this.canPrev = false
-
-        return (child.offsetLeft) < (offsetLeft + scrollLeft)
-      })
-
-      if (!prevItem) return false
-
-      this.$refs.container.scrollLeft = prevItem.offsetLeft - offsetLeft
+      this.scrollTo(item.offsetLeft - offsetLeft);
     },
-    next () {
-      const { offsetWidth, offsetLeft, scrollLeft, children } = this.$refs.container
-      this.canPrev = true
+    next() {
+      const container = this.$refs.container
+      const { children } = container
+      const { 
+        right: containerRight, 
+        left: containerLeft 
+      } = container.getBoundingClientRect()
 
-      const nextItem = Object.values(children).find((child, index) => {
-        if (!child) return false
-        if (index === children.length - 1) this.canNext = false
+      const nextItem = getNextItem(children, containerRight)
 
-        return (child.offsetWidth + child.offsetLeft) > (offsetLeft + offsetWidth + scrollLeft)
-      })
-
-      if (!nextItem) return false
-
-      this.$refs.container.scrollLeft = (nextItem.offsetWidth + nextItem.offsetLeft) - (offsetLeft + offsetWidth)
+      this.scrollTo(nextItem.offsetLeft - containerLeft);
     },
-    onClick (event, to) {
+    scrollTo(offset) {
+      this.$refs.container.scrollTo({
+          "behavior": "smooth",
+          "left": offset,
+      });
+    },
+    onClick (event, item) {
+      if(!event && !event.target) return false
       const target = event.target
       const { offsetLeft, scrollLeft, offsetWidth } = this.$refs.container
+
+      this.addActiveClass(target)
 
       if ((offsetLeft + scrollLeft) > target.offsetLeft) {
         this.prev()
       } else if ((offsetLeft + scrollLeft + offsetWidth) < (target.offsetLeft + target.offsetWidth)) {
         this.next()
       }
-      this.$router.push(to)
-    }
 
+      this.$emit('onClick', item)
+    },
+    addActiveClass(target) {
+      if(!target) return false
+      const { children } = this.$refs.container
+     
+      removeClass(children, ACTIVE_CLASS)
+     
+      target.classList.add(ACTIVE_CLASS)
+    },
+    handleScroll(event) {
+      const targetScrollLeft = event.target.scrollLeft
+      const targetScrollRight = Math.round(event.target.getBoundingClientRect().right)
+      const lastItemRight = Math.round(this.lastItem.getBoundingClientRect().right)
+      
+      if(targetScrollLeft === 0) this.index = 0
+      if(targetScrollLeft > 0) this.index = 1
+      if(targetScrollRight >= lastItemRight) this.index = this.items.length - 1
+    }
   }
 }
 </script>
@@ -128,16 +160,24 @@ export default {
       display: none;
     }
 
-    & .item {
-      display: flex;
+    & > * {
       white-space: nowrap;
       cursor: pointer;
+    }
+
+    & .item {
+      display: flex;
       margin: 0 .3em;
       padding: .3em .8em;
       border-radius: 30px;
       border: 1px solid #eee;
       transition: all .4s ease;
+
+      &.ms-item-is-active {
+        color: green;
+      }
     }
+
   }
 
   & .controls {
@@ -151,6 +191,7 @@ export default {
       margin: 0;
       outline: none;
       border: 1px solid #eee;
+      cursor: pointer;
     }
   }
 }
